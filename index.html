@@ -134,6 +134,7 @@
         .preview-table th { font-weight: 600; text-align: left; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; border-bottom-width: 2px; padding-bottom: 8px; }
         .preview-table .text-center { text-align: center; } .preview-table .text-right { text-align: right; }
         .preview-table tfoot td { font-weight: 600; border-top: 2px solid #374151; border-bottom: none; }
+        .preview-table td.hs-code-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.7rem; padding-left: 2px; padding-right: 2px; }
         .preview-identity-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 0.75rem; font-size: 0.76rem; color: #1f2937; border: 1px solid #d1d5db; border-radius: 0.45rem; overflow: hidden; }
         .preview-identity-table th { text-align: left; font-weight: 600; padding: 6px 10px; background: #f3f4f6; width: 32%; border-bottom: 1px solid #e5e7eb; }
         .preview-identity-table td { padding: 6px 10px; border-bottom: 1px solid #e5e7eb; }
@@ -1909,7 +1910,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 totalAmount += amountValue;
                 if (itemsBody) {
-                    itemsBody.insertAdjacentHTML('beforeend', `<tr><td>${index + 1}</td><td><pre class="whitespace-pre-wrap">${getVal('description')}</pre></td><td data-template="ci-only">${getVal('hs-code')}</td><td class="text-right" data-template="ci-only">${formatWeightValue(netWtValue)}</td><td class="text-center">${formatQuantityValue(qty)}</td><td>${uom}</td><td class="text-right">${formatUnitPriceValue(unitPrice)}</td><td class="text-right">${formatCurrencyValue(amountValue, currencySymbol)}</td></tr>`);
+                    itemsBody.insertAdjacentHTML('beforeend', `<tr><td>${index + 1}</td><td><pre class="whitespace-pre-wrap">${getVal('description')}</pre></td><td class="hs-code-cell" data-template="ci-only">${getVal('hs-code')}</td><td class="text-right" data-template="ci-only">${formatWeightValue(netWtValue)}</td><td class="text-center">${formatQuantityValue(qty)}</td><td>${uom}</td><td class="text-right">${formatUnitPriceValue(unitPrice)}</td><td class="text-right">${formatCurrencyValue(amountValue, currencySymbol)}</td></tr>`);
                 }
             });
 
@@ -1979,7 +1980,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         packingBody.insertAdjacentHTML('beforeend', `<tr>
                             <td class="text-right pr-2">${itemIndex}</td>
                             <td><pre class="whitespace-pre-wrap pl-4">${description}</pre></td>
-                            <td class="text-center">${hscode}</td>
+                            <td class="hs-code-cell text-center">${hscode}</td>
                             <td class="text-center">${formatQuantityValue(qty)}</td>
                             <td>${uom}</td>
                             <td></td>
