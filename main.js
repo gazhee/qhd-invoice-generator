@@ -101,7 +101,7 @@ function createWindow() {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
               title: 'About QHD Invoice Generator',
-              message: 'QHD Invoice Generator v2.1.0',
+              message: 'QHD Invoice Generator v2.4.0',
               detail: 'Invoice and Packing List Generator for QHD Company\n\nDeveloped by Xuan Zhang\nEmail: xuan.zhang@qhdpv.com',
               buttons: ['OK']
             });

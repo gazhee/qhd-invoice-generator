@@ -1774,7 +1774,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const parsedAmount = parseAmountValue(data.amount);
         const computedDefaultAmount = computeItemAmount(qtyValue, unitPriceValue);
         const resolvedAmountNumber = parsedAmount !== null ? parsedAmount : computedDefaultAmount;
-        const amountDisplay = Number.isFinite(resolvedAmountNumber) ? resolvedAmountNumber.toFixed(2) : '0.00';
+        const amountDisplay = Number.isFinite(resolvedAmountNumber) ? resolvedAmountNumber.toFixed(5) : '0.00000';
         const amountMode = data.amountMode === 'manual' && parsedAmount !== null ? 'manual' : 'auto';
         const netWtDisplay = Number.isFinite(parseFloat(netWtValue)) ? (parseFloat(netWtValue).toFixed(2)) : '0.00';
         const unitPriceDisplay = Number.isFinite(parseFloat(unitPriceValue)) ? (parseFloat(unitPriceValue).toFixed(5)) : '0.00000';
@@ -1808,7 +1808,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const applyAutoAmount = () => {
             const autoAmount = computeItemAmount(qtyInput.value, unitPriceInput.value);
-            amountInput.value = (Number.isFinite(autoAmount) ? autoAmount : 0).toFixed(2);
+            amountInput.value = (Number.isFinite(autoAmount) ? autoAmount : 0).toFixed(5);
         };
 
         if (rowEl.dataset.manualAmount === 'true') {
@@ -1817,7 +1817,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 rowEl.dataset.manualAmount = 'false';
                 applyAutoAmount();
             } else {
-                amountInput.value = parsed.toFixed(2);
+                amountInput.value = parsed.toFixed(5);
             }
         } else {
             applyAutoAmount();
@@ -1846,7 +1846,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     rowEl.dataset.manualAmount = 'false';
                     applyAutoAmount();
                 } else {
-                    amountInput.value = parsed.toFixed(2);
+                    amountInput.value = parsed.toFixed(5);
                     rowEl.dataset.manualAmount = 'true';
                 }
                 updateItemsAndTotals();
@@ -2028,7 +2028,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const numberFormatters = {
-        amount: new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        amount: new Intl.NumberFormat('en-US', { minimumFractionDigits: 5, maximumFractionDigits: 5 }),
         unitPrice: new Intl.NumberFormat('en-US', { minimumFractionDigits: 5, maximumFractionDigits: 5 }),
         quantity: new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 }),
         weight: new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
@@ -2485,11 +2485,11 @@ ${autoPrintScriptCloseGuard}
 
             if (finalizeAmounts) {
                 if (useManual) {
-                    if (amountInput) amountInput.value = parsedAmount.toFixed(2);
+                    if (amountInput) amountInput.value = parsedAmount.toFixed(5);
                     row.dataset.manualAmount = 'true';
                 } else {
                     row.dataset.manualAmount = 'false';
-                    if (amountInput) amountInput.value = resolvedAmount.toFixed(2);
+                    if (amountInput) amountInput.value = resolvedAmount.toFixed(5);
                 }
             }
 
@@ -2500,7 +2500,7 @@ ${autoPrintScriptCloseGuard}
                 uom: uomSelect.value === 'Custom' ? row.querySelector('[data-item-prop="uom-custom"]').value : uomSelect.value,
                 netWt: netWtInput ? netWtInput.value : '0',
                 unitPrice: unitPriceValue,
-                amount: resolvedAmount.toFixed(2),
+                amount: resolvedAmount.toFixed(5),
                 amountMode: useManual ? 'manual' : 'auto'
             });
         });

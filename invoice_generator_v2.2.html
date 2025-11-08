@@ -1768,16 +1768,23 @@ document.addEventListener('DOMContentLoaded', function() {
     function addNewItem(data = {}) {
         itemCounter++;
         const uomOptions = [...optionConfigs.uom.options, 'Custom'].map(o => `<option value="${o}" ${o === (data.uom || optionConfigs.uom.default) ? 'selected' : ''}>${o}</option>`).join('');
+        const packageTypeOptions = [...optionConfigs.packageType.options, 'Custom'].map(o => `<option value="${o}" ${o === (data.packageType || optionConfigs.packageType.default) ? 'selected' : ''}>${o}</option>`).join('');
         const qtyValue = data.qty !== undefined ? data.qty : 0;
-        const unitPriceValue = data.unitPrice !== undefined ? data.unitPrice : '0.00000';
+        const unitPriceValue = data.unitPrice !== undefined ? data.unitPrice : '0.0000';
         const netWtValue = data.netWt !== undefined ? data.netWt : '0.00';
+        const packagesValue = data.packages !== undefined ? data.packages : 0;
+        const grossWtValue = data.grossWt !== undefined ? data.grossWt : '0.00';
+        const volumeValue = data.volume !== undefined ? data.volume : '0.000';
+        const dimensionsValue = data.dimensions !== undefined ? data.dimensions : '';
         const parsedAmount = parseAmountValue(data.amount);
         const computedDefaultAmount = computeItemAmount(qtyValue, unitPriceValue);
         const resolvedAmountNumber = parsedAmount !== null ? parsedAmount : computedDefaultAmount;
         const amountDisplay = Number.isFinite(resolvedAmountNumber) ? resolvedAmountNumber.toFixed(2) : '0.00';
         const amountMode = data.amountMode === 'manual' && parsedAmount !== null ? 'manual' : 'auto';
         const netWtDisplay = Number.isFinite(parseFloat(netWtValue)) ? (parseFloat(netWtValue).toFixed(2)) : '0.00';
-        const unitPriceDisplay = Number.isFinite(parseFloat(unitPriceValue)) ? (parseFloat(unitPriceValue).toFixed(5)) : '0.00000';
+        const grossWtDisplay = Number.isFinite(parseFloat(grossWtValue)) ? (parseFloat(grossWtValue).toFixed(2)) : '0.00';
+        const volumeDisplay = Number.isFinite(parseFloat(volumeValue)) ? (parseFloat(volumeValue).toFixed(3)) : '0.000';
+        const unitPriceDisplay = Number.isFinite(parseFloat(unitPriceValue)) ? (parseFloat(unitPriceValue).toFixed(4)) : '0.0000';
         const fullItemHtml = `
             <div id="item-${itemCounter}" class="item-row p-4 border rounded-lg bg-white relative">
                 <button class="remove-item-btn absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold">✖</button>
@@ -1787,10 +1794,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="grid grid-cols-2 gap-4">
                         <div data-doc="invoice" data-template="ci-only"><label class="text-sm">HS CODE 税则号</label><input type="text" data-item-prop="hs-code" class="form-input mt-1" value="${data['hs-code'] || ''}"></div>
                         <div data-doc="invoice,packing" data-template="ci-only"><label class="text-sm">净重 (KG) NET WT.</label><input type="number" step="0.01" data-item-prop="netWt" class="form-input mt-1" value="${netWtDisplay}"></div>
+                        <div data-doc="packing"><label class="text-sm">包装类型 Package Type</label><div class="custom-combo mt-1"><select class="form-select package-type-select">${packageTypeOptions}</select><input type="text" data-item-prop="packageType-custom" class="form-input hidden package-type-custom"></div></div>
+                        <div data-doc="packing"><label class="text-sm">件数 Packages</label><input type="number" step="1" min="0" data-item-prop="packages" class="form-input mt-1" value="${packagesValue}"></div>
+                        <div data-doc="packing"><label class="text-sm">尺寸 (cm) L×W×H</label><input type="text" data-item-prop="dimensions" class="form-input mt-1" placeholder="e.g., 120×80×100" value="${dimensionsValue}"></div>
+                        <div data-doc="packing"><label class="text-sm">净重 (KG) NET WT.</label><input type="number" step="0.01" data-item-prop="netWt" class="form-input mt-1" value="${netWtDisplay}"></div>
+                        <div data-doc="packing"><label class="text-sm">毛重 (KG) GROSS WT.</label><input type="number" step="0.01" data-item-prop="grossWt" class="form-input mt-1" value="${grossWtDisplay}"></div>
+                        <div data-doc="packing"><label class="text-sm">体积 (CBM) Volume</label><input type="number" step="0.001" data-item-prop="volume" class="form-input mt-1" value="${volumeDisplay}"></div>
                         <div><label class="text-sm">数量 QTY.</label><input type="number" data-item-prop="qty" class="form-input mt-1" value="${qtyValue}"></div>
                         <div><label class="text-sm">单位 UOM</label><div class="custom-combo mt-1"><select class="form-select uom-select">${uomOptions}</select><input type="text" data-item-prop="uom-custom" class="form-input hidden uom-custom"></div></div>
-                        <div class="col-span-2" data-doc="invoice"><label class="text-sm">单价 Unit Price</label><input type="number" step="0.00001" data-item-prop="unitPrice" class="form-input mt-1" value="${unitPriceDisplay}"></div>
-                        <div class="col-span-2" data-doc="invoice"><label class="text-sm">金额 Amount</label><div class="mt-1 flex flex-wrap items-center gap-2"><input type="number" step="0.00001" data-item-prop="amount" class="form-input w-40" value="${amountDisplay}"><button type="button" class="restore-amount-btn text-sm text-blue-600 hover:text-blue-700 font-medium">恢复自动金额 Restore</button></div></div>
+                        <div class="col-span-2" data-doc="invoice"><label class="text-sm">单价 Unit Price</label><input type="number" step="0.0001" data-item-prop="unitPrice" class="form-input mt-1" value="${unitPriceDisplay}"></div>
+                        <div class="col-span-2" data-doc="invoice"><label class="text-sm">金额 Amount</label><div class="mt-1 flex flex-wrap items-center gap-2"><input type="number" step="0.01" data-item-prop="amount" class="form-input w-40" value="${amountDisplay}"><button type="button" class="restore-amount-btn text-sm text-blue-600 hover:text-blue-700 font-medium">恢复自动金额 Restore</button></div></div>
                     </div>
                 </div>
             </div>`;
@@ -1798,11 +1811,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const rowEl = D(`item-${itemCounter}`);
         const uomSelect = rowEl.querySelector('.uom-select');
         const uomCustom = rowEl.querySelector('.uom-custom');
+        const packageTypeSelect = rowEl.querySelector('.package-type-select');
+        const packageTypeCustom = rowEl.querySelector('.package-type-custom');
         const qtyInput = rowEl.querySelector('[data-item-prop="qty"]');
         const unitPriceInput = rowEl.querySelector('[data-item-prop="unitPrice"]');
         const amountInput = rowEl.querySelector('[data-item-prop="amount"]');
         const restoreBtn = rowEl.querySelector('.restore-amount-btn');
         const netWtInput = rowEl.querySelector('[data-item-prop="netWt"]');
+        const grossWtInput = rowEl.querySelector('[data-item-prop="grossWt"]');
+        const packagesInput = rowEl.querySelector('[data-item-prop="packages"]');
+        const volumeInput = rowEl.querySelector('[data-item-prop="volume"]');
+        const dimensionsInput = rowEl.querySelector('[data-item-prop="dimensions"]');
 
         rowEl.dataset.manualAmount = amountMode === 'manual' ? 'true' : 'false';
 
@@ -1830,28 +1849,30 @@ document.addEventListener('DOMContentLoaded', function() {
             updateItemsAndTotals();
         };
 
-        if (qtyInput) qtyInput.addEventListener('input', handleAutoFieldChange);
-        if (unitPriceInput) unitPriceInput.addEventListener('input', handleAutoFieldChange);
+        qtyInput.addEventListener('input', handleAutoFieldChange);
+        unitPriceInput.addEventListener('input', handleAutoFieldChange);
         if (netWtInput) netWtInput.addEventListener('input', updateItemsAndTotals);
+        if (grossWtInput) grossWtInput.addEventListener('input', updateItemsAndTotals);
+        if (packagesInput) packagesInput.addEventListener('input', updateItemsAndTotals);
+        if (volumeInput) volumeInput.addEventListener('input', updateItemsAndTotals);
+        if (dimensionsInput) dimensionsInput.addEventListener('input', updateItemsAndTotals);
 
-        if (amountInput) {
-            amountInput.addEventListener('input', () => {
+        amountInput.addEventListener('input', () => {
+            rowEl.dataset.manualAmount = 'true';
+            updateItemsAndTotals();
+        });
+
+        amountInput.addEventListener('blur', () => {
+            const parsed = parseAmountValue(amountInput.value);
+            if (parsed === null) {
+                rowEl.dataset.manualAmount = 'false';
+                applyAutoAmount();
+            } else {
+                amountInput.value = parsed.toFixed(2);
                 rowEl.dataset.manualAmount = 'true';
-                updateItemsAndTotals();
-            });
-
-            amountInput.addEventListener('blur', () => {
-                const parsed = parseAmountValue(amountInput.value);
-                if (parsed === null) {
-                    rowEl.dataset.manualAmount = 'false';
-                    applyAutoAmount();
-                } else {
-                    amountInput.value = parsed.toFixed(2);
-                    rowEl.dataset.manualAmount = 'true';
-                }
-                updateItemsAndTotals();
-            });
-        }
+            }
+            updateItemsAndTotals();
+        });
 
         if (restoreBtn) {
             restoreBtn.addEventListener('click', () => {
@@ -1875,8 +1896,21 @@ document.addEventListener('DOMContentLoaded', function() {
             uomSelect.dispatchEvent(new Event('change'));
         }
 
-        // Update totals after adding item
-        updateItemsAndTotals();
+        // Set up Package Type select change handler
+        if (packageTypeSelect && packageTypeCustom) {
+            packageTypeSelect.addEventListener('change', function() {
+                packageTypeCustom.classList.toggle('hidden', this.value !== 'Custom');
+                updateAllPreviews();
+            });
+
+            if (data.packageType && !optionConfigs.packageType.options.includes(data.packageType)) {
+                packageTypeSelect.value = 'Custom';
+                packageTypeCustom.value = data.packageType;
+                packageTypeCustom.classList.remove('hidden');
+            } else {
+                packageTypeSelect.dispatchEvent(new Event('change'));
+            }
+        }
     }
 
     function updateItemsAndTotals() {
@@ -2029,7 +2063,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const numberFormatters = {
         amount: new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        unitPrice: new Intl.NumberFormat('en-US', { minimumFractionDigits: 5, maximumFractionDigits: 5 }),
+        unitPrice: new Intl.NumberFormat('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 }),
         quantity: new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 }),
         weight: new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
         volume: new Intl.NumberFormat('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 })
@@ -2473,6 +2507,9 @@ ${autoPrintScriptCloseGuard}
             const unitPriceInput = row.querySelector('[data-item-prop="unitPrice"]');
             const amountInput = row.querySelector('[data-item-prop="amount"]');
             const netWtInput = row.querySelector('[data-item-prop="netWt"]');
+            const grossWtInput = row.querySelector('[data-item-prop="grossWt"]');
+            const packagesInput = row.querySelector('[data-item-prop="packages"]');
+            const volumeInput = row.querySelector('[data-item-prop="volume"]');
             const qtyValue = qtyInput ? qtyInput.value : '0';
             const unitPriceValue = unitPriceInput ? unitPriceInput.value : '0';
             const manualRequested = row.dataset.manualAmount === 'true';
@@ -2493,12 +2530,21 @@ ${autoPrintScriptCloseGuard}
                 }
             }
 
+            const packageTypeSelect = row.querySelector('.package-type-select');
+            const packageType = packageTypeSelect ? (packageTypeSelect.value === 'Custom' ? row.querySelector('[data-item-prop="packageType-custom"]').value : packageTypeSelect.value) : 'Carton';
+            const dimensionsInput = row.querySelector('[data-item-prop="dimensions"]');
+
             data.items.push({
                 description: row.querySelector('[data-item-prop="description"]').value,
                 'hs-code': row.querySelector('[data-item-prop="hs-code"]').value,
                 qty: qtyValue,
                 uom: uomSelect.value === 'Custom' ? row.querySelector('[data-item-prop="uom-custom"]').value : uomSelect.value,
+                packageType: packageType,
                 netWt: netWtInput ? netWtInput.value : '0',
+                grossWt: grossWtInput ? grossWtInput.value : '0',
+                packages: packagesInput ? packagesInput.value : 0,
+                dimensions: dimensionsInput ? dimensionsInput.value : '',
+                volume: volumeInput ? volumeInput.value : '0',
                 unitPrice: unitPriceValue,
                 amount: resolvedAmount.toFixed(2),
                 amountMode: useManual ? 'manual' : 'auto'
