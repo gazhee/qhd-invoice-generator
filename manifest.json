@@ -2,7 +2,7 @@
   "name": "QHD Invoice Generator",
   "short_name": "QHD Invoice",
   "description": "Invoice and Packing List Generator for QHD Company",
-  "start_url": "./invoice_generator_v2.2.html",
+  "start_url": "./invoice_generator_v2.4.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
@@ -28,14 +28,14 @@
       "name": "New Invoice",
       "short_name": "Invoice",
       "description": "Create a new invoice",
-      "url": "./invoice_generator_v2.2.html?mode=invoice",
+      "url": "./invoice_generator_v2.4.html?mode=invoice",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "New Packing List",
       "short_name": "Packing",
       "description": "Create a new packing list",
-      "url": "./invoice_generator_v2.2.html?mode=packing",
+      "url": "./invoice_generator_v2.4.html?mode=packing",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
