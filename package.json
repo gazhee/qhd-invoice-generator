@@ -1,6 +1,6 @@
 {
   "name": "qhd-invoice-generator",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Invoice and Packing List Generator for QHD Company",
   "main": "main.js",
   "scripts": {

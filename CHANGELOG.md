@@ -2,6 +2,24 @@
 
 All notable changes to the QHD Invoice Generator project will be documented in this file.
 
+## [v2.5.0] - 2025-11-08
+
+### Fixed
+- **PDF text copy-paste functionality**: Fixed issue where text in generated PDF files could not be copied and pasted correctly
+  - Added PDF-friendly font declarations using system fonts with proper Unicode support for both Chinese and English text
+  - Disabled antialiased font smoothing in print media (`-webkit-font-smoothing: subpixel-antialiased`)
+  - Added `text-rendering: optimizeLegibility` for better text selection in PDFs
+  - Implemented comprehensive font stack: "Microsoft YaHei", "PingFang SC", "Heiti SC", "SimSun", Arial, "Arial Unicode MS", sans-serif
+  - Applied fixes to both `index.html` and `invoice_generator_v2.0.html`
+
+### Technical Details
+- Modified `@media print` section (index.html:2175, invoice_generator_v2.0.html:2170): Added font-family, font-smoothing, and text-rendering properties
+- Updated print view template (index.html:2110, invoice_generator_v2.0.html:2105): Added universal selector with PDF-optimized font settings
+- Changed from antialiased to subpixel-antialiased font smoothing to ensure text renders as selectable text rather than vector paths
+- Fonts selected for optimal PDF embedding and Chinese character support across Windows and macOS
+
+---
+
 ## [v2.1] - 2025-10-22
 
 ### Fixed

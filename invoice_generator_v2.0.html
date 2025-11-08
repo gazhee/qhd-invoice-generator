@@ -2104,6 +2104,13 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="https://cdn.tailwindcss.com"></scr${'ipt'}>
 <style>
 ${baseStyles}
+/* PDF-friendly font and text rendering settings */
+* {
+  font-family: "Microsoft YaHei", "PingFang SC", "Heiti SC", "SimSun", Arial, "Arial Unicode MS", sans-serif !important;
+  -webkit-font-smoothing: subpixel-antialiased !important;
+  -moz-osx-font-smoothing: auto !important;
+  text-rendering: optimizeLegibility !important;
+}
 body { background: #f3f4f6; padding: 0; display: flex; flex-direction: column; }
 .print-wrapper {
   width: 100%;
@@ -2172,6 +2179,11 @@ body { background: #f3f4f6; padding: 0; display: flex; flex-direction: column; }
     height: 100%;
     margin: 0;
     padding: 0;
+    /* PDF-friendly font settings for better text copy-paste */
+    font-family: "Microsoft YaHei", "PingFang SC", "Heiti SC", "SimSun", Arial, "Arial Unicode MS", sans-serif !important;
+    -webkit-font-smoothing: subpixel-antialiased !important;
+    -moz-osx-font-smoothing: auto !important;
+    text-rendering: optimizeLegibility !important;
   }
   body {
     background: #ffffff;
