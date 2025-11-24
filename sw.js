@@ -1,6 +1,6 @@
-const CACHE_NAME = 'qhd-invoice-v2.2';
+const CACHE_NAME = 'qhd-invoice-v2.5.1';
 const urlsToCache = [
-  './invoice_generator_v2.2.html',
+  './invoice_generator_v2.4.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -48,7 +48,7 @@ self.addEventListener('fetch', (event) => {
           return response;
         }).catch(() => {
           // If both cache and network fail, return offline page
-          return caches.match('./invoice_generator_v2.2.html');
+          return caches.match('./invoice_generator_v2.4.html');
         });
       })
   );

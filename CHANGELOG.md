@@ -2,6 +2,22 @@
 
 All notable changes to the QHD Invoice Generator project will be documented in this file.
 
+## [v2.5.1] - 2025-11-08
+
+### Fixed
+- **PDF filename printing issue**: Fixed bug where file names could not automatically appear when printing PDFs
+  - Added explicit document title setting after writing HTML to print window
+  - Document title now correctly reflects invoice type and full invoice number
+  - When users select "Print to PDF", the filename automatically uses the invoice/packing list number
+  - Applied fix to both `index.html` (Electron app) and `invoice_generator_v2.4.html` (web version)
+
+### Technical Details
+- Modified print window handler (index.html:2991-2993, invoice_generator_v2.4.html:2991-2993): Added `printWindow.document.title` assignment
+- Document title format: `${invoiceType} ${fullInvoiceNo}` (e.g., "Commercial Invoice QHD-INV-20251108-01-A")
+- Title is set after `document.close()` to ensure proper propagation to browser print dialog
+
+---
+
 ## [v2.5.0] - 2025-11-08
 
 ### Fixed

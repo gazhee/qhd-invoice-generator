@@ -2987,6 +2987,11 @@ ${autoPrintScriptCloseGuard}
             printWindow.document.open();
             printWindow.document.write(printableHtml);
             printWindow.document.close();
+
+            // Set document title for PDF filename
+            const documentTitle = `${data.invoiceType || 'Invoice'} ${data.fullInvoiceNo || ''}`.trim() || 'Invoice';
+            printWindow.document.title = documentTitle;
+
             setTimeout(() => hideDownloadPrep(), 800);
         } catch (error) {
             console.error('Printable HTML generation error:', error);
