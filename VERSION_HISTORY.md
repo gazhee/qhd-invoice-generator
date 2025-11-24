@@ -8,6 +8,8 @@ This document provides a comprehensive record of all versions and changes made t
 
 | Version | Release Date | Type | Key Changes |
 |---------|--------------|------|-------------|
+| v2.5.3 | 2025-11-24 | Bug Fix | Packing list totals calculation fix |
+| v2.5.2 | 2025-11-24 | Enhancement | Packing list UI simplification |
 | v2.5.1 | 2025-11-08 | Bug Fix | PDF filename printing issue fix |
 | v2.5.0 | 2025-11-08 | Bug Fix | PDF text copy-paste functionality fix |
 | v2.4.0 | 2025-11-08 | Maintenance | File consolidation and organization |
@@ -15,6 +17,95 @@ This document provides a comprehensive record of all versions and changes made t
 | v2.2.0 | 2025-10-30 | Feature | Table optimization, package quantity, bug fixes |
 | v2.1.0 | 2025-10-22 | Bug Fix | HS CODE wrapping issue fix |
 | v2.0 | 2024 | Major Release | Initial PWA version with core features |
+
+---
+
+## v2.5.3 - 2025-11-24
+
+### Type
+Bug Fix Release
+
+### Summary
+Fixed critical bug where packing list totals were incorrectly calculated by summing orphaned DOM elements.
+
+### Changes
+
+#### Fixed
+- **Packing list totals calculation bug**: Totals now correctly sum only visible package cards
+  - Root cause: Global selector `QA('.package-card')` was capturing all package-card elements in the entire document
+  - This included orphaned, hidden, or duplicate elements outside the main form container
+  - Fixed by scoping selectors to only search within `items-container` element
+  - Three locations fixed:
+    1. Preview update totals calculation (line ~1937)
+    2. Package data collection when saving revisions (line ~2450)
+    3. Package renumbering after deletion (line ~2779)
+
+#### Technical Details
+- Changed from: `QA('.package-card').forEach(...)`
+- Changed to: `D('items-container').querySelectorAll('.package-card').forEach(...)`
+- Prevents accumulation of incorrect values from DOM elements outside the active form
+- Totals now accurately reflect only the packages currently in the form
+
+#### Example Issue
+Before fix:
+- 1 visible crate with weight 407 kg and volume 0.703 CBM
+- TOTALS row showed: 1,007.00 kg and 11.770 CBM (incorrect)
+
+After fix:
+- 1 visible crate with weight 407 kg and volume 0.703 CBM
+- TOTALS row shows: 407.00 kg and 0.703 CBM (correct)
+
+#### Files Modified
+- `index.html` (Electron app)
+- `invoice_generator_v2.5.2.html` (web version)
+
+---
+
+## v2.5.2 - 2025-11-24
+
+### Type
+Enhancement Release
+
+### Summary
+Streamlined packing list interface by removing redundant displays while maintaining calculation accuracy.
+
+### Changes
+
+#### Enhanced
+
+1. **Simplified Packing List Display**
+   - Removed individual crate volume (CBM) display from form
+   - Removed individual crate "Total" display (gross weight + volume per crate)
+   - Volume calculation still runs automatically in background (stored in hidden input)
+   - Cleaner, less cluttered interface focused on essential data entry
+
+2. **Improved Weight Display Precision**
+   - Changed gross weight display from 2 decimals to 1 decimal place
+   - Applies to: form inputs, preview display, and totals
+   - Format change: `407.00 KG` → `407.0 KG`
+   - Better readability for typical freight weights
+
+#### Technical Details
+- Removed CBM display elements from package card UI
+- Removed "Total" display showing calculated weight/volume per crate
+- Volume input field changed to hidden input (still calculated and stored)
+- Updated weight formatter: `toFixed(2)` → `toFixed(1)`
+- Calculation logic unchanged - all math still accurate
+
+#### Business Value
+- ✅ Reduced visual clutter in packing list form
+- ✅ Faster data entry (fewer fields to review)
+- ✅ Weight precision matches industry standards (1 decimal for freight)
+- ✅ Volume still calculated for exports/totals (just not displayed during input)
+
+#### Backward Compatibility
+- ✅ Fully compatible with existing packing list data
+- ✅ Hidden volume field still saves/loads correctly
+- ✅ No data migration required
+
+#### Files Modified
+- `invoice_generator_v2.5.2.html` (web version)
+- `index.html` (Electron app)
 
 ---
 
@@ -432,24 +523,29 @@ Initial release of QHD Invoice Generator as a Progressive Web Application.
 2025-11-08
   ├─ v2.4.0 ──────────── File Consolidation
   ├─ v2.5.0 ──────────── PDF Copy-Paste Fix
-  └─ v2.5.1 ──────────── PDF Filename Fix (CURRENT)
+  └─ v2.5.1 ──────────── PDF Filename Fix
+
+2025-11-24
+  ├─ v2.5.2 ──────────── Packing List UI Simplification
+  └─ v2.5.3 ──────────── Packing List Totals Fix (CURRENT)
 ```
 
 ---
 
 ## Current Active Files
 
-As of v2.5.1, the following are the active application files:
+As of v2.5.3, the following are the active application files:
 
 ### Production Files
-- `invoice_generator_v2.4.html` - Latest web version (with v2.5.1 fixes applied)
-- `index.html` - Latest Electron version (with v2.5.1 fixes applied)
+- `invoice_generator_v2.5.2.html` - Latest web version (with v2.5.3 fixes applied)
+- `index.html` - Latest Electron version (with v2.5.3 fixes applied)
 
 ### Archived Version Files (Historical Reference Only)
 - `invoice_generator_v2.0.html` - v2.0 baseline
 - `invoice_generator_v2.1.html` - v2.1 with HS CODE fix
 - `invoice_generator_v2.2.html` - v2.2 with table optimization
 - `invoice_generator_v2.3.html` - v2.3 with data separation
+- `invoice_generator_v2.4.html` - v2.4 with file consolidation
 
 ### Support Files
 - `manifest.json` - PWA manifest
@@ -489,17 +585,27 @@ As of v2.5.1, the following are the active application files:
 - Automatic, no data migration needed
 - PDF filenames now auto-generated
 
+**v2.5.1 → v2.5.2:**
+- Automatic, no data migration needed
+- Packing list UI simplified (volume still calculated)
+
+**v2.5.2 → v2.5.3:**
+- Automatic, no data migration needed
+- Packing list totals now calculate correctly
+
 ### Data Compatibility Matrix
 
-| Version | v2.0 | v2.1 | v2.2 | v2.3 | v2.4 | v2.5.0 | v2.5.1 |
-|---------|------|------|------|------|------|--------|--------|
-| v2.0 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v2.1 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v2.2 data | ✅ | ✅ | ✅ | ⚠️* | ⚠️* | ⚠️* | ⚠️* |
-| v2.3 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v2.4 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v2.5.0 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v2.5.1 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Version | v2.0 | v2.1 | v2.2 | v2.3 | v2.4 | v2.5.0 | v2.5.1 | v2.5.2 | v2.5.3 |
+|---------|------|------|------|------|------|--------|--------|--------|--------|
+| v2.0 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.1 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.2 data | ✅ | ✅ | ✅ | ⚠️* | ⚠️* | ⚠️* | ⚠️* | ⚠️* | ⚠️* |
+| v2.3 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.4 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.5.0 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.5.1 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.5.2 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.5.3 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 *⚠️ v2.2 invoice data may contain packaging fields which are ignored in v2.3+
 
@@ -516,8 +622,8 @@ As of v2.5.1, the following are the active application files:
 ## Document Information
 
 **Created**: 2025-11-08
-**Last Updated**: 2025-11-08
-**Current Version**: v2.5.1
+**Last Updated**: 2025-11-24
+**Current Version**: v2.5.3
 **Purpose**: Complete historical record of all version changes
 
 ---

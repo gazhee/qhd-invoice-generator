@@ -1917,7 +1917,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let totalQty = 0;
             let totalNet = 0;
-            QA('.package-card').forEach((packageCard, pkgIndex) => {
+            const itemsContainer = D('items-container');
+            const packageCards = itemsContainer ? itemsContainer.querySelectorAll('.package-card') : [];
+            packageCards.forEach((packageCard, pkgIndex) => {
                 const packageTypeSelect = packageCard.querySelector('.package-type-select');
                 const packageType = packageTypeSelect ? (packageTypeSelect.value === 'Custom' ? packageCard.querySelector('.package-type-custom').value : packageTypeSelect.value) : 'Carton';
                 const dimensionsInput = packageCard.querySelector('[data-package-prop="dimensions"]');
@@ -2428,7 +2430,9 @@ ${autoPrintScriptCloseGuard}
         // Collect packages for packing list
         if (docType === 'packing') {
             data.packages = [];
-            QA('.package-card').forEach(packageCard => {
+            const itemsContainer = D('items-container');
+            const packageCards = itemsContainer ? itemsContainer.querySelectorAll('.package-card') : [];
+            packageCards.forEach(packageCard => {
                 const packageTypeSelect = packageCard.querySelector('.package-type-select');
                 const packageType = packageTypeSelect ? (packageTypeSelect.value === 'Custom' ? packageCard.querySelector('[data-package-prop="packageType-custom"]').value : packageTypeSelect.value) : 'Carton';
                 const dimensionsInput = packageCard.querySelector('[data-package-prop="dimensions"]');
@@ -2755,7 +2759,7 @@ ${autoPrintScriptCloseGuard}
         if (e.target.classList.contains('remove-package-btn')) {
             e.target.closest('.package-card').remove();
             let pkgNum = 1;
-            QA('.package-card').forEach(card => {
+            D('items-container').querySelectorAll('.package-card').forEach(card => {
                 card.querySelector('p').textContent = `📦 包装 Package #${pkgNum}`;
                 pkgNum++;
             });
