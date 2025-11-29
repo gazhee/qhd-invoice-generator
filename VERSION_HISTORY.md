@@ -8,6 +8,7 @@ This document provides a comprehensive record of all versions and changes made t
 
 | Version | Release Date | Type | Key Changes |
 |---------|--------------|------|-------------|
+| v2.5.4 | 2025-11-29 | Bug Fix | Packing list TOTALS row and print pagination fixes |
 | v2.5.3 | 2025-11-24 | Bug Fix | Packing list totals calculation fix |
 | v2.5.2 | 2025-11-24 | Enhancement | Packing list UI simplification |
 | v2.5.1 | 2025-11-08 | Bug Fix | PDF filename printing issue fix |
@@ -17,6 +18,81 @@ This document provides a comprehensive record of all versions and changes made t
 | v2.2.0 | 2025-10-30 | Feature | Table optimization, package quantity, bug fixes |
 | v2.1.0 | 2025-10-22 | Bug Fix | HS CODE wrapping issue fix |
 | v2.0 | 2024 | Major Release | Initial PWA version with core features |
+
+---
+
+## v2.5.4 - 2025-11-29
+
+### Type
+Bug Fix Release
+
+### Summary
+Fixed two critical bugs in packing list print layouts: missing NET WT. column in TOTALS row and print pagination issues causing content duplication/truncation.
+
+### Changes
+
+#### Fixed
+
+**Bug #1: Missing NET WT. Column in TOTALS Row**
+- **Issue**: The TOTALS footer row was missing the total net weight column
+- **Before**: TOTALS row only showed 2 values (Gross WT. + Volume)
+- **After**: TOTALS row now shows all 3 values (Net WT. + Gross WT. + Volume)
+- **Root cause**: HTML template used `colspan="7"` which incorrectly merged the NET WT. column
+- **Fix**: Changed colspan from 7 to 6, added `<td data-target="pl-total-net">` element
+- **Impact**: Users can now see total net weight in printed packing lists
+
+**Bug #2: Print Pagination Issues**
+- **Issue**: Page breaks could occur in middle of table rows, causing:
+  - Package headers separated from their item rows
+  - Item descriptions truncated or duplicated
+  - TOTALS row orphaned on new page
+  - Visual artifacts in printed PDFs
+- **Root cause**: No CSS page-break control rules defined for print media
+- **Fix**: Added comprehensive CSS rules in `@media print` section:
+  - `page-break-inside: avoid` for table rows
+  - `page-break-after: avoid` for package headers
+  - `break-inside: avoid` for tbody/tfoot elements
+- **Impact**: Cleaner print layouts, no content duplication
+
+#### Technical Details
+
+**Bug #1 Modifications:**
+- Files: `index.html`, `invoice_generator_v2.5.4.html`
+- Lines: 799-804
+- Changed HTML structure:
+  ```html
+  <!-- Before -->
+  <td colspan="7">TOTALS</td>
+  <td data-target="pl-total-gross">0.00</td>
+  <td data-target="pl-total-volume">0.000</td>
+
+  <!-- After -->
+  <td colspan="6">TOTALS</td>
+  <td data-target="pl-total-net">0.00</td>
+  <td data-target="pl-total-gross">0.00</td>
+  <td data-target="pl-total-volume">0.000</td>
+  ```
+
+**Bug #2 Modifications:**
+- Files: `index.html`, `invoice_generator_v2.5.4.html`
+- Lines: index.html (2252-2274), invoice_generator_v2.5.4.html (2235-2257)
+- Added new CSS rules in `@media print`:
+  ```css
+  .preview-table tr { page-break-inside: avoid; }
+  .preview-table tbody tr { break-inside: avoid; }
+  .preview-table tfoot { page-break-inside: avoid; }
+  .preview-table tr.font-semibold { page-break-after: avoid; }
+  ```
+
+#### Backward Compatibility
+- ✅ Fully backward compatible with v2.5.3 and earlier
+- ✅ No data migration required
+- ✅ Existing documents display correctly
+
+#### Files Modified
+- `index.html` (Electron app) - 2 locations
+- `invoice_generator_v2.5.4.html` (web version) - 2 locations
+- `package.json` - version number updated
 
 ---
 
@@ -57,7 +133,7 @@ After fix:
 
 #### Files Modified
 - `index.html` (Electron app)
-- `invoice_generator_v2.5.2.html` (web version)
+- `invoice_generator_v2.5.4.html` (web version)
 
 ---
 
@@ -104,7 +180,7 @@ Streamlined packing list interface by removing redundant displays while maintain
 - ✅ No data migration required
 
 #### Files Modified
-- `invoice_generator_v2.5.2.html` (web version)
+- `invoice_generator_v2.5.4.html` (web version)
 - `index.html` (Electron app)
 
 ---
@@ -527,18 +603,21 @@ Initial release of QHD Invoice Generator as a Progressive Web Application.
 
 2025-11-24
   ├─ v2.5.2 ──────────── Packing List UI Simplification
-  └─ v2.5.3 ──────────── Packing List Totals Fix (CURRENT)
+  └─ v2.5.3 ──────────── Packing List Totals Fix
+
+2025-11-29
+  └─ v2.5.4 ──────────── TOTALS Row + Print Pagination Fixes (CURRENT)
 ```
 
 ---
 
 ## Current Active Files
 
-As of v2.5.3, the following are the active application files:
+As of v2.5.4, the following are the active application files:
 
 ### Production Files
-- `invoice_generator_v2.5.2.html` - Latest web version (with v2.5.3 fixes applied)
-- `index.html` - Latest Electron version (with v2.5.3 fixes applied)
+- `invoice_generator_v2.5.4.html` - Latest web version (v2.5.4)
+- `index.html` - Latest Electron version (v2.5.4)
 
 ### Archived Version Files (Historical Reference Only)
 - `invoice_generator_v2.0.html` - v2.0 baseline
@@ -593,19 +672,25 @@ As of v2.5.3, the following are the active application files:
 - Automatic, no data migration needed
 - Packing list totals now calculate correctly
 
+**v2.5.3 → v2.5.4:**
+- Automatic, no data migration needed
+- TOTALS row now displays total net weight
+- Print layouts improved (no content duplication)
+
 ### Data Compatibility Matrix
 
-| Version | v2.0 | v2.1 | v2.2 | v2.3 | v2.4 | v2.5.0 | v2.5.1 | v2.5.2 | v2.5.3 |
-|---------|------|------|------|------|------|--------|--------|--------|--------|
-| v2.0 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v2.1 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v2.2 data | ✅ | ✅ | ✅ | ⚠️* | ⚠️* | ⚠️* | ⚠️* | ⚠️* | ⚠️* |
-| v2.3 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v2.4 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v2.5.0 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v2.5.1 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v2.5.2 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| v2.5.3 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Version | v2.0 | v2.1 | v2.2 | v2.3 | v2.4 | v2.5.0 | v2.5.1 | v2.5.2 | v2.5.3 | v2.5.4 |
+|---------|------|------|------|------|------|--------|--------|--------|--------|--------|
+| v2.0 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.1 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.2 data | ✅ | ✅ | ✅ | ⚠️* | ⚠️* | ⚠️* | ⚠️* | ⚠️* | ⚠️* | ⚠️* |
+| v2.3 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.4 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.5.0 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.5.1 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.5.2 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.5.3 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| v2.5.4 data | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 *⚠️ v2.2 invoice data may contain packaging fields which are ignored in v2.3+
 
@@ -622,8 +707,8 @@ As of v2.5.3, the following are the active application files:
 ## Document Information
 
 **Created**: 2025-11-08
-**Last Updated**: 2025-11-24
-**Current Version**: v2.5.3
+**Last Updated**: 2025-11-29
+**Current Version**: v2.5.4
 **Purpose**: Complete historical record of all version changes
 
 ---

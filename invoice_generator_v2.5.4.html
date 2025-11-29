@@ -797,7 +797,8 @@
                                 </tr></thead>
                                 <tbody id="preview-packing-items-body"></tbody>
                                 <tfoot><tr>
-                                    <td colspan="7" class="text-right pr-4 font-bold">TOTALS</td>
+                                    <td colspan="6" class="text-right pr-4 font-bold">TOTALS</td>
+                                    <td class="text-right font-bold" data-target="pl-total-net">0.00</td>
                                     <td class="text-right font-bold" data-target="pl-total-gross">0.00</td>
                                     <td class="text-right font-bold" data-target="pl-total-volume">0.000</td>
                                 </tr></tfoot>
@@ -2230,6 +2231,31 @@ body { background: #f3f4f6; padding: 0; display: flex; flex-direction: column; }
   }
 
   #invoice-preview tfoot { display: table-row-group; }
+
+  /* Prevent page breaks inside table rows */
+  .preview-table tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Keep package headers with their items */
+  .preview-table tbody tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Prevent orphaned TOTALS row */
+  .preview-table tfoot {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Prevent breaks after package headers (semibold rows) */
+  .preview-table tr.font-semibold {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
   .print-header {
     display: flex !important;
     position: fixed;
