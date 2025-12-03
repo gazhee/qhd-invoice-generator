@@ -7,5 +7,10 @@ contextBridge.exposeInMainWorld('electron', {
   isElectron: true,
   // Add any IPC communication methods here if needed in the future
   onNewInvoice: (callback) => ipcRenderer.on('new-invoice', callback),
-  onNewPackingList: (callback) => ipcRenderer.on('new-packing-list', callback)
+  onNewPackingList: (callback) => ipcRenderer.on('new-packing-list', callback),
+
+  // PDF generation and file operations
+  printToPDF: (options) => ipcRenderer.invoke('print-to-pdf', options),
+  showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),
+  savePDFFile: (filePath, data) => ipcRenderer.invoke('save-pdf-file', filePath, data)
 });

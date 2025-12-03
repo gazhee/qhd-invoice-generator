@@ -1,5 +1,6 @@
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 let mainWindow;
 
@@ -101,7 +102,7 @@ function createWindow() {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
               title: 'About QHD Invoice Generator',
-              message: 'QHD Invoice Generator v2.5.3',
+              message: 'QHD Invoice Generator v3.0.0',
               detail: 'Invoice and Packing List Generator for QHD Company\n\nDeveloped by Xuan Zhang\nEmail: xuan.zhang@qhdpv.com',
               buttons: ['OK']
             });
@@ -122,6 +123,72 @@ function createWindow() {
 // This method will be called when Electron has finished initialization
 app.whenReady().then(() => {
   createWindow();
+
+  // IPC handlers for PDF generation and file operations
+  ipcMain.handle('print-to-pdf', async (event, options) => {
+    try {
+      const { htmlContent, filename, pdfOptions } = options;
+
+      // Create a hidden window for PDF generation
+      const printWindow = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true
+        }
+      });
+
+      // Load HTML content
+      await printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+
+      // Wait for content to render
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Generate PDF with print CSS
+      const pdfBuffer = await printWindow.webContents.printToPDF({
+        marginsType: 1, // Custom margins
+        pageSize: 'A4',
+        printBackground: true,
+        landscape: false,
+        ...pdfOptions
+      });
+
+      printWindow.close();
+
+      return {
+        success: true,
+        data: pdfBuffer.toString('base64')
+      };
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  });
+
+  ipcMain.handle('show-save-dialog', async (event, options) => {
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: 'Save PDF',
+      defaultPath: options.defaultPath || 'invoice.pdf',
+      filters: [
+        { name: 'PDF Files', extensions: ['pdf'] }
+      ]
+    });
+    return result;
+  });
+
+  ipcMain.handle('save-pdf-file', async (event, filePath, base64Data) => {
+    try {
+      const buffer = Buffer.from(base64Data, 'base64');
+      fs.writeFileSync(filePath, buffer);
+      return { success: true };
+    } catch (error) {
+      console.error('File save error:', error);
+      return { success: false, error: error.message };
+    }
+  });
 
   app.on('activate', () => {
     // On macOS, re-create a window when dock icon is clicked and no windows open

@@ -656,7 +656,7 @@
                                 <div class="flex items-center gap-2 mt-1">
                                     <button type="button" id="start-new-revision-btn" class="hidden">新建修订 Start New Revision</button>
                                 </div>
-                                <p id="editing-lock-banner" class="text-xs text-red-600 mt-1 hidden">Viewing historical revision. Editing is disabled. 返回最新修订以继续编辑 / Switch to the latest revision to edit.</p>
+                                <!-- Editing lock banner removed in v3.0.0 - all revisions are now editable -->
                                 <div id="revision-history" class="mt-3">
                                     <p class="text-xs text-gray-600 font-semibold mb-1">修订历史 Revision History</p>
                                     <table>
@@ -922,7 +922,7 @@ document.addEventListener('DOMContentLoaded', function() {
             body.dataset.docType = getDocumentMode();
             latestStoredRevision = '';
             currentRevisionLoaded = '';
-            setEditingLocked(false);
+            // Editing always enabled (v3.0.0)
             updateRevisionIndicator(latestStoredRevision);
             lastRenderedRevisionBase = '';
             updateNewRevisionButtonState();
@@ -938,7 +938,7 @@ document.addEventListener('DOMContentLoaded', function() {
             body.dataset.docType = docType;
             latestStoredRevision = '';
             currentRevisionLoaded = '';
-            setEditingLocked(false);
+            // Editing always enabled (v3.0.0)
             updateRevisionIndicator(latestStoredRevision);
             lastRenderedRevisionBase = coreId;
             updateNewRevisionButtonState();
@@ -991,42 +991,8 @@ document.addEventListener('DOMContentLoaded', function() {
         updateConfirmAndActionButtons();
     }
 
-    function setEditingLocked(flag) {
-        if (editingLocked === flag) {
-            updateConfirmAndActionButtons();
-            return;
-        }
-        editingLocked = flag;
-        const form = D('form-container');
-        if (form) {
-            const elements = form.querySelectorAll('input, textarea, select, button');
-            elements.forEach((el) => {
-                if (el.closest('#revision-history')) return;
-                if (['open-printable-html-btn', 'manage-shippers-btn'].includes(el.id)) return;
-                // Allow document-mode switching even when locked
-                if (el.name === 'document-mode') return;
-                if (flag) {
-                    if (!el.dataset.lockAware) {
-                        el.dataset.lockAware = '1';
-                        el.dataset.lockOriginalDisabled = el.disabled ? '1' : '0';
-                    }
-                    el.disabled = true;
-                } else if (el.dataset.lockAware === '1') {
-                    if (el.dataset.lockOriginalDisabled === '0') {
-                        el.disabled = false;
-                    }
-                    delete el.dataset.lockAware;
-                    delete el.dataset.lockOriginalDisabled;
-                }
-            });
-        }
-        if (!flag) {
-            revisionConfirmed = false;
-        } else if (!revisionConfirmed) {
-            revisionConfirmed = Boolean(currentRevisionLoaded || latestStoredRevision);
-        }
-        updateRevisionIndicator();
-    }
+    // Historical note: setEditingLocked function removed in v3.0.0
+    // Users can now edit any historical revision without restrictions
 
     function updateNewRevisionButtonState() {
         if (!newRevisionBtn) return;
@@ -1068,7 +1034,7 @@ document.addEventListener('DOMContentLoaded', function() {
             currentRevisionLoaded = latestStoredRevision;
             renderRevisionTable(dataToSave.invoiceBaseNo, currentRevisionLoaded);
             updateRevisionIndicator(latestStoredRevision);
-            setEditingLocked(true);
+            // Editing always enabled (v3.0.0)
             updateAllPreviews();
             // Refresh saved invoices list for packing list reference
             if (dataToSave.documentType === 'invoice') {
@@ -1078,7 +1044,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Confirm revision failed:', error);
             showToast('修订确认失败，请稍后再试');
-            setEditingLocked(false);
+            // Editing always enabled (v3.0.0)
             confirmRevisionBtn.disabled = false;
         } finally {
             delete confirmRevisionBtn.dataset.processing;
@@ -1584,12 +1550,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div><label class="text-sm font-medium">件数 Quantity</label><input type="number" step="1" min="1" data-package-prop="packages" class="form-input mt-1" value="${packagesValue}"></div>
                         <div><label class="text-sm font-medium">包装类型 Type</label><div class="custom-combo mt-1"><select class="form-select package-type-select">${packageTypeOptions}</select><input type="text" data-package-prop="packageType-custom" class="form-input hidden package-type-custom"></div></div>
                         <div><label class="text-sm font-medium">尺寸 (cm) L×W×H</label><input type="text" data-package-prop="dimensions" class="form-input mt-1 dimensions-input" placeholder="120×80×100" value="${dimensionsValue}"></div>
-                        <div><label class="text-sm font-medium">单箱毛重 (KG) Unit Gross WT</label><input type="number" step="0.01" data-package-prop="grossWt" class="form-input mt-1" value="${grossWtDisplay}"></div>
+                        <div><label class="text-sm font-medium">总毛重 (KG) Total Gross WT</label><input type="number" step="0.01" data-package-prop="totalGrossWt" class="form-input mt-1" value="${grossWtDisplay}"></div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div><label class="text-sm font-medium">单箱体积 (CBM) Unit Measurement</label><input type="number" step="0.001" data-package-prop="cbm" class="form-input mt-1 cbm-display" value="${cbmDisplay}" readonly style="background-color: #f9fafb;"></div>
-                        <div><label class="text-sm font-medium">总计 Total</label><div class="form-input mt-1 bg-green-50 font-semibold package-total-display" style="background-color: #f0fdf4; color: #15803d; border-color: #86efac;">毛重 ${(parseFloat(grossWtDisplay) * packagesValue).toFixed(2)} KG | 体积 ${(cbm * packagesValue).toFixed(3)} CBM</div></div>
-                    </div>
+                    <input type="hidden" data-package-prop="cbm" class="cbm-display" value="${cbmDisplay}">
+                    <div class="mt-2 text-sm text-gray-600 package-calc-display">总体积 Total CBM: <span class="font-semibold text-green-700">${(cbm * packagesValue).toFixed(3)}</span> m³</div>
                 </div>
                 <div class="border-t pt-3">
                     <p class="text-sm font-medium text-gray-700 mb-2">包装内货物 Items in this Package:</p>
@@ -1606,17 +1570,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const dimensionsInput = packageEl.querySelector('.dimensions-input');
         const cbmDisplayEl = packageEl.querySelector('.cbm-display');
         const packagesInput = packageEl.querySelector('[data-package-prop="packages"]');
-        const grossWtInput = packageEl.querySelector('[data-package-prop="grossWt"]');
-        const totalDisplayEl = packageEl.querySelector('.package-total-display');
+        const totalGrossWtInput = packageEl.querySelector('[data-package-prop="totalGrossWt"]');
+        const totalCbmDisplayEl = packageEl.querySelector('.package-calc-display span');
 
-        // Function to update total display
-        const updateTotalDisplay = () => {
+        // Function to update total CBM display
+        const updateTotalCbmDisplay = () => {
             const packages = parseInt(packagesInput.value) || 1;
-            const grossWt = parseFloat(grossWtInput.value) || 0;
             const cbm = parseFloat(cbmDisplayEl.value) || 0;
-            const totalGrossWt = (grossWt * packages).toFixed(2);
             const totalCbm = (cbm * packages).toFixed(3);
-            totalDisplayEl.textContent = `毛重 ${totalGrossWt} KG | 体积 ${totalCbm} CBM`;
+            if (totalCbmDisplayEl) {
+                totalCbmDisplayEl.textContent = totalCbm;
+            }
         };
 
         // Package type select handler
@@ -1635,28 +1599,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Dimensions auto-calculate CBM and update total
+        // Dimensions auto-calculate single CBM and update total CBM display
         if (dimensionsInput && cbmDisplayEl) {
             dimensionsInput.addEventListener('input', function() {
                 const cbm = calculateCBM(this.value);
                 cbmDisplayEl.value = cbm.toFixed(3);
-                updateTotalDisplay();
+                updateTotalCbmDisplay();
                 updateAllPreviews();
             });
         }
 
-        // Packages quantity change handler
+        // Packages quantity change handler - update total CBM display
         if (packagesInput) {
             packagesInput.addEventListener('input', function() {
-                updateTotalDisplay();
+                updateTotalCbmDisplay();
                 updateAllPreviews();
             });
         }
 
-        // Gross weight change handler
-        if (grossWtInput) {
-            grossWtInput.addEventListener('input', function() {
-                updateTotalDisplay();
+        // Total gross weight change handler
+        if (totalGrossWtInput) {
+            totalGrossWtInput.addEventListener('input', function() {
                 updateAllPreviews();
             });
         }
@@ -2249,6 +2212,15 @@ body { background: #f3f4f6; padding: 0; display: flex; flex-direction: column; }
 
   #invoice-preview tfoot { display: table-row-group; }
 
+  /* Ensure table headers repeat on each page when printing multi-page documents */
+  .preview-table thead {
+    display: table-header-group;
+  }
+
+  .preview-table tbody {
+    display: table-row-group;
+  }
+
   /* Prevent page breaks inside table rows */
   .preview-table tr {
     page-break-inside: avoid;
@@ -2353,11 +2325,8 @@ ${autoPrintScriptCloseGuard}
                 el.style.display = 'none';
                 return;
             }
-            if (docType === 'packing') {
-                el.style.display = '';
-                return;
-            }
-            el.style.display = isCI ? '' : 'none';
+            // CI-only fields should only show in invoice mode when type is Commercial Invoice
+            el.style.display = (docType === 'invoice' && isCI) ? '' : 'none';
         });
 
         const totalCol = D('total-colspan');
@@ -2657,8 +2626,7 @@ ${autoPrintScriptCloseGuard}
         }
         const autoIncrementRevision = options.autoIncrementRevision !== false;
         currentRevisionLoaded = options.selectedRevision || storedRevision || '';
-        const shouldLock = Boolean(options.selectedRevision && options.autoIncrementRevision === false);
-        setEditingLocked(shouldLock);
+        // Editing always enabled in v3.0.0 - no locking mechanism
         if (versionInput) {
             if (autoIncrementRevision) {
                 const nextRevision = getNextVersionLetter(storedRevision || versionInput.value);
@@ -2689,7 +2657,7 @@ ${autoPrintScriptCloseGuard}
             showToast(`已加载历史修订 Revision ${latestVersion}`);
         } else {
             latestStoredRevision = '';
-            setEditingLocked(false);
+            // Editing always enabled (v3.0.0)
             updateRevisionIndicator(latestStoredRevision);
             updateNewRevisionButtonState();
         }
@@ -2981,7 +2949,7 @@ ${autoPrintScriptCloseGuard}
         });
     }
 
-    D('open-printable-html-btn').addEventListener('click', function() {
+    D('open-printable-html-btn').addEventListener('click', async function() {
         const btn = this;
         const btnText = D('html-btn-text');
         const btnLoader = D('html-btn-loader');
@@ -2997,7 +2965,7 @@ ${autoPrintScriptCloseGuard}
             currentRevisionLoaded = latestStoredRevision;
             renderRevisionTable(data.invoiceBaseNo, currentRevisionLoaded);
             updateRevisionIndicator(latestStoredRevision);
-            setEditingLocked(true);
+            // Editing always enabled (v3.0.0)
             updateAllPreviews();
             // Refresh saved invoices list for packing list reference
             if (data.documentType === 'invoice') {
@@ -3008,24 +2976,63 @@ ${autoPrintScriptCloseGuard}
                 throw new Error('Printable HTML template empty');
             }
 
-            const printWindow = window.open('', '_blank');
-            if (!printWindow) {
-                showToast('请允许浏览器弹出窗口以打开打印视图 / Please allow popups to open print view');
-                return;
-            }
             showDownloadPrep();
-            printWindow.document.open();
-            printWindow.document.write(printableHtml);
-            printWindow.document.close();
-
-            // Set document title for PDF filename
             const documentTitle = `${data.invoiceType || 'Invoice'} ${data.fullInvoiceNo || ''}`.trim() || 'Invoice';
-            printWindow.document.title = documentTitle;
+
+            // Check if running in Electron environment
+            if (window.electron && window.electron.isElectron) {
+                // Electron environment: Use native PDF generation
+                console.log('Using Electron native PDF generation...');
+
+                // Generate PDF
+                const result = await window.electron.printToPDF({
+                    htmlContent: printableHtml,
+                    filename: documentTitle,
+                    pdfOptions: {
+                        marginsType: 1,
+                        pageSize: 'A4',
+                        printBackground: true
+                    }
+                });
+
+                if (!result.success) {
+                    throw new Error(result.error || 'PDF generation failed');
+                }
+
+                // Show save dialog
+                const saveResult = await window.electron.showSaveDialog({
+                    defaultPath: `${documentTitle}.pdf`
+                });
+
+                if (!saveResult.canceled && saveResult.filePath) {
+                    // Save PDF file
+                    const saveFileResult = await window.electron.savePDFFile(saveResult.filePath, result.data);
+                    if (saveFileResult.success) {
+                        showToast('PDF已保存成功！ / PDF saved successfully!');
+                    } else {
+                        throw new Error(saveFileResult.error || 'File save failed');
+                    }
+                }
+            } else {
+                // Browser environment: Use traditional window.open method
+                console.log('Using browser print method...');
+
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) {
+                    showToast('请允许浏览器弹出窗口以打开打印视图 / Please allow popups to open print view');
+                    return;
+                }
+
+                printWindow.document.open();
+                printWindow.document.write(printableHtml);
+                printWindow.document.close();
+                printWindow.document.title = documentTitle;
+            }
 
             setTimeout(() => hideDownloadPrep(), 800);
         } catch (error) {
-            console.error('Printable HTML generation error:', error);
-            showToast('打印视图生成失败，请稍后再试');
+            console.error('Print/PDF generation error:', error);
+            showToast('打印失败，请稍后再试 / Print failed, please try again');
             hideDownloadPrep();
         } finally {
             btn.disabled = false;
