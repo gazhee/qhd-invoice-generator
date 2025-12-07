@@ -1010,7 +1010,7 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmRevisionBtn.disabled = revisionConfirmed || !shouldShow;
         }
         updateNewRevisionButtonState();
-        const allowActions = editingLocked && (revisionConfirmed || Boolean(latestStoredRevision));
+        const allowActions = revisionConfirmed || Boolean(latestStoredRevision);
         const actionButtons = [D('open-printable-html-btn')];
         actionButtons.forEach(btn => {
             if (!btn) return;
@@ -1534,7 +1534,7 @@ document.addEventListener('DOMContentLoaded', function() {
         packageCounter++;
         const packageId = `package-${packageCounter}`;
         const packageTypeOptions = [...optionConfigs.packageType.options, 'Custom'].map(o => `<option value="${o}" ${o === (data.packageType || optionConfigs.packageType.default) ? 'selected' : ''}>${o}</option>`).join('');
-        const grossWtValue = data.grossWt !== undefined ? data.grossWt : '0.00';
+        const grossWtValue = data.totalGrossWt !== undefined ? data.totalGrossWt : '0.00';
         const grossWtDisplay = Number.isFinite(parseFloat(grossWtValue)) ? (parseFloat(grossWtValue).toFixed(2)) : '0.00';
         const dimensionsValue = data.dimensions !== undefined ? data.dimensions : '';
         const packagesValue = data.packages !== undefined ? data.packages : 1;
@@ -1905,22 +1905,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 const packageType = packageTypeSelect ? (packageTypeSelect.value === 'Custom' ? packageCard.querySelector('.package-type-custom').value : packageTypeSelect.value) : 'Carton';
                 const dimensionsInput = packageCard.querySelector('[data-package-prop="dimensions"]');
                 const dimensions = dimensionsInput ? dimensionsInput.value : '';
-                const grossWtInput = packageCard.querySelector('[data-package-prop="grossWt"]');
-                const grossWt = parseFloat(grossWtInput ? grossWtInput.value : 0) || 0;
+                const totalGrossWtInput = packageCard.querySelector('[data-package-prop="totalGrossWt"]');
+                const totalGrossWt = parseFloat(totalGrossWtInput ? totalGrossWtInput.value : 0) || 0;
                 const cbmInput = packageCard.querySelector('[data-package-prop="cbm"]');
                 const cbm = parseFloat(cbmInput ? cbmInput.value : 0) || 0;
                 const packagesInput = packageCard.querySelector('[data-package-prop="packages"]');
                 const packages = parseInt(packagesInput ? packagesInput.value : 1) || 1;
 
                 totalPackages += packages;
-                totalGross += grossWt * packages;
+                totalGross += totalGrossWt;
                 totalVolume += cbm * packages;
 
                 const items = packageCard.querySelectorAll('.package-item');
 
                 // Package header row
                 if (packingBody && items.length > 0) {
-                    const totalGrossWt = grossWt * packages;
                     const totalCbm = cbm * packages;
                     packingBody.insertAdjacentHTML('beforeend', `<tr class="font-semibold bg-gray-50">
                         <td colspan="2" class="text-left">${packageType} (${formatQuantityValue(packages)} ${packages > 1 ? 'packages' : 'package'})</td>
@@ -2221,6 +2220,38 @@ body { background: #f3f4f6; padding: 0; display: flex; flex-direction: column; }
     display: table-row-group;
   }
 
+  /* Fixed column widths for packing list table in PDF */
+  table[data-doc="packing"].preview-table {
+    table-layout: fixed !important;
+  }
+
+  table[data-doc="packing"].preview-table th:nth-child(1),
+  table[data-doc="packing"].preview-table td:nth-child(1) { width: 4% !important; }
+
+  table[data-doc="packing"].preview-table th:nth-child(2),
+  table[data-doc="packing"].preview-table td:nth-child(2) { width: 26% !important; }
+
+  table[data-doc="packing"].preview-table th:nth-child(3),
+  table[data-doc="packing"].preview-table td:nth-child(3) { width: 10% !important; }
+
+  table[data-doc="packing"].preview-table th:nth-child(4),
+  table[data-doc="packing"].preview-table td:nth-child(4) { width: 12% !important; }
+
+  table[data-doc="packing"].preview-table th:nth-child(5),
+  table[data-doc="packing"].preview-table td:nth-child(5) { width: 6% !important; }
+
+  table[data-doc="packing"].preview-table th:nth-child(6),
+  table[data-doc="packing"].preview-table td:nth-child(6) { width: 12% !important; }
+
+  table[data-doc="packing"].preview-table th:nth-child(7),
+  table[data-doc="packing"].preview-table td:nth-child(7) { width: 10% !important; }
+
+  table[data-doc="packing"].preview-table th:nth-child(8),
+  table[data-doc="packing"].preview-table td:nth-child(8) { width: 10% !important; }
+
+  table[data-doc="packing"].preview-table th:nth-child(9),
+  table[data-doc="packing"].preview-table td:nth-child(9) { width: 10% !important; }
+
   /* Prevent page breaks inside table rows */
   .preview-table tr {
     page-break-inside: avoid;
@@ -2246,24 +2277,10 @@ body { background: #f3f4f6; padding: 0; display: flex; flex-direction: column; }
   }
 
   .print-header {
-    display: flex !important;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    background: #ffffff;
-    justify-content: space-between;
+    display: none !important;
   }
   .print-footer {
-    display: flex !important;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    background: #ffffff;
-    justify-content: center;
+    display: none !important;
   }
 }
 </style>
@@ -2448,14 +2465,14 @@ ${autoPrintScriptCloseGuard}
                 const packageTypeSelect = packageCard.querySelector('.package-type-select');
                 const packageType = packageTypeSelect ? (packageTypeSelect.value === 'Custom' ? packageCard.querySelector('[data-package-prop="packageType-custom"]').value : packageTypeSelect.value) : 'Carton';
                 const dimensionsInput = packageCard.querySelector('[data-package-prop="dimensions"]');
-                const grossWtInput = packageCard.querySelector('[data-package-prop="grossWt"]');
+                const totalGrossWtInput = packageCard.querySelector('[data-package-prop="totalGrossWt"]');
                 const cbmInput = packageCard.querySelector('[data-package-prop="cbm"]');
                 const packagesInput = packageCard.querySelector('[data-package-prop="packages"]');
 
                 const packageData = {
                     packageType: packageType,
                     dimensions: dimensionsInput ? dimensionsInput.value : '',
-                    grossWt: grossWtInput ? grossWtInput.value : '0',
+                    totalGrossWt: totalGrossWtInput ? totalGrossWtInput.value : '0',
                     cbm: cbmInput ? cbmInput.value : '0',
                     packages: packagesInput ? parseInt(packagesInput.value) || 1 : 1,
                     items: []
