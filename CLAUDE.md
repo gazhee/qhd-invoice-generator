@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-QHD Invoice Generator is a single-page Progressive Web Application (PWA) for creating and managing commercial invoices, proforma invoices, and packing lists. The application runs entirely in the browser with no backend, using localStorage for all data persistence.
+QHD Invoice Generator is a software for creating and managing commercial invoices, proforma invoices, and packing lists.
 
 **Key characteristic**: This is a monolithic single-file application (`invoice_generator_v2.0.html`) containing all HTML, CSS, and JavaScript in one ~2900 line file.
 

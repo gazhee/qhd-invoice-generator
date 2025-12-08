@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.0.2] - 2025-12-08
+
+### Fixed
+- **Packing list dimensions column display**: Adjusted table column widths to prevent content overflow
+  - Description column: 26% → 23% (reduced by 3%)
+  - Dimensions column: 12% → 15% (increased by 3%)
+  - Fixes display issue where dimension values (e.g., "120*100*10") were squeezed or wrapped
+  - Affected file: `index.html` (lines 2232, 2238)
+
+---
+
 ## [3.0.1] - 2025-12-07
 
 ### Changed
@@ -246,7 +257,8 @@ Initial release of QHD Invoice Generator as a Progressive Web Application (PWA).
 2025-11-24  v2.5.3   Packing List Totals Fix
 2025-11-29  v2.5.4   TOTALS Row + Print Pagination Fixes
 2025-12-03  v3.0.0   Electron PDF + Edit Historical Revisions
-2025-12-07  v3.0.1   Project Cleanup (current)
+2025-12-07  v3.0.1   Project Cleanup
+2025-12-08  v3.0.2   Packing List Column Width Fix (current)
 ```
 
 ---
