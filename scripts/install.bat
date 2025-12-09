@@ -4,6 +4,9 @@ setlocal enabledelayedexpansion
 REM QHD Invoice Generator - Easy Installer for Windows
 REM Double-click this file to install and run
 
+REM Change to project root directory (parent of scripts folder)
+cd /d "%~dp0.."
+
 title QHD Invoice Generator - Installer
 
 color 0B
@@ -37,38 +40,38 @@ REM Check if all required files exist
 echo [2/4] Checking required files...
 set ALL_FILES_PRESENT=1
 
-if exist "invoice_generator_v2.0.html" (
-    echo [OK] Found: invoice_generator_v2.0.html
+if exist "src\index.html" (
+    echo [OK] Found: src\index.html
 ) else (
-    echo [X] Missing: invoice_generator_v2.0.html
+    echo [X] Missing: src\index.html
     set ALL_FILES_PRESENT=0
 )
 
-if exist "manifest.json" (
-    echo [OK] Found: manifest.json
+if exist "src\manifest.json" (
+    echo [OK] Found: src\manifest.json
 ) else (
-    echo [X] Missing: manifest.json
+    echo [X] Missing: src\manifest.json
     set ALL_FILES_PRESENT=0
 )
 
-if exist "sw.js" (
-    echo [OK] Found: sw.js
+if exist "src\sw.js" (
+    echo [OK] Found: src\sw.js
 ) else (
-    echo [X] Missing: sw.js
+    echo [X] Missing: src\sw.js
     set ALL_FILES_PRESENT=0
 )
 
-if exist "icon-192.png" (
-    echo [OK] Found: icon-192.png
+if exist "assets\icons\icon-192.png" (
+    echo [OK] Found: assets\icons\icon-192.png
 ) else (
-    echo [X] Missing: icon-192.png
+    echo [X] Missing: assets\icons\icon-192.png
     set ALL_FILES_PRESENT=0
 )
 
-if exist "icon-512.png" (
-    echo [OK] Found: icon-512.png
+if exist "assets\icons\icon-512.png" (
+    echo [OK] Found: assets\icons\icon-512.png
 ) else (
-    echo [X] Missing: icon-512.png
+    echo [X] Missing: assets\icons\icon-512.png
     set ALL_FILES_PRESENT=0
 )
 
@@ -116,12 +119,12 @@ echo.
 color 0B
 echo For you (on this computer):
 color 0F
-echo    http://localhost:%PORT%/invoice_generator_v2.0.html
+echo    http://localhost:%PORT%/src/index.html
 echo.
 color 0B
 echo For co-workers (on same network):
 color 0F
-echo    http://%IP%:%PORT%/invoice_generator_v2.0.html
+echo    http://%IP%:%PORT%/src/index.html
 echo.
 color 0E
 echo To install as desktop app:
@@ -142,14 +145,14 @@ color 0A
 echo ================================================
 echo Server is running on:
 color 0F
-echo    http://localhost:%PORT%/invoice_generator_v2.0.html
+echo    http://localhost:%PORT%/src/index.html
 color 0A
 echo ================================================
 echo.
 
 REM Open in default browser
 timeout /t 1 /nobreak >nul
-start http://localhost:%PORT%/invoice_generator_v2.0.html
+start http://localhost:%PORT%/src/index.html
 
 REM Start the server
 python -m http.server %PORT%

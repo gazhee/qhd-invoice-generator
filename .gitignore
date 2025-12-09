@@ -12,6 +12,9 @@ npm-debug.log*
 # macOS
 .DS_Store
 
+# Temporary files
+.gemini-clipboard/
+
 # Windows
 Thumbs.db
 
@@ -20,3 +23,6 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Claude Code
+.claude/

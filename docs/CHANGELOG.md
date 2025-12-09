@@ -16,6 +16,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Provides 16px additional horizontal space for table content
   - Ensures consistent display across Windows and macOS platforms
   - Affected file: `index.html` (lines 132, 2174)
+- **Service Worker outdated references**: Updated PWA service worker to use current file paths
+  - Cache name: v2.5.1 → v3.0.3
+  - HTML reference: `invoice_generator_v2.4.html` → `index.html`
+  - Fixes offline PWA functionality
+  - Affected file: `sw.js` (lines 1, 3, 51)
+
+### Internal Changes (2025-12-09)
+- **Project structure reorganization**: Restructured project directories for better maintainability
+  - Created `src/` directory for application source files
+  - Created `electron/` directory for Electron app files
+  - Created `assets/icons/` directory for icon resources
+  - Created `docs/` directory for all documentation
+  - Created `scripts/` directory for install scripts
+  - Updated all file path references across the project
+  - Preserved git history through git mv commands
+  - Note: This is an internal refactoring with no user-facing changes
+- **Git repository cleanup**: Improved .gitignore configuration
+  - Added `.claude/` to .gitignore (Claude Code local settings)
+  - Removed tracked temporary files from git history
+  - Ensures only source code and documentation are version controlled
 
 ---
 

@@ -10,7 +10,7 @@ function createWindow() {
     height: 900,
     minWidth: 1200,
     minHeight: 700,
-    icon: path.join(__dirname, 'icon-512.png'),
+    icon: path.join(__dirname, '..', 'assets', 'icons', 'icon-512.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -22,7 +22,7 @@ function createWindow() {
     title: 'QHD Invoice Generator'
   });
 
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile(path.join(__dirname, '..', 'src', 'index.html'));
 
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {

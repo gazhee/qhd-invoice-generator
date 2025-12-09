@@ -10,9 +10,9 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Get the directory where this script is located
+# Get the directory where this script is located and go to project root
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$SCRIPT_DIR"
+cd "$SCRIPT_DIR/.."
 
 clear
 echo -e "${BLUE}================================================${NC}"
@@ -40,7 +40,7 @@ echo ""
 
 # Check if all required files exist
 echo -e "${YELLOW}[2/4] Checking required files...${NC}"
-REQUIRED_FILES=("invoice_generator_v2.0.html" "manifest.json" "sw.js" "icon-192.png" "icon-512.png")
+REQUIRED_FILES=("src/index.html" "src/manifest.json" "src/sw.js" "assets/icons/icon-192.png" "assets/icons/icon-512.png")
 ALL_FILES_PRESENT=true
 
 for file in "${REQUIRED_FILES[@]}"; do
@@ -96,10 +96,10 @@ echo ""
 echo -e "${YELLOW}📱 Access URLs:${NC}"
 echo ""
 echo -e "${GREEN}For you (on this computer):${NC}"
-echo -e "   ${BLUE}http://localhost:$PORT/invoice_generator_v2.0.html${NC}"
+echo -e "   ${BLUE}http://localhost:$PORT/src/index.html${NC}"
 echo ""
 echo -e "${GREEN}For co-workers (on same network):${NC}"
-echo -e "   ${BLUE}http://$LOCAL_IP:$PORT/invoice_generator_v2.0.html${NC}"
+echo -e "   ${BLUE}http://$LOCAL_IP:$PORT/src/index.html${NC}"
 echo ""
 echo -e "${YELLOW}📋 To install as desktop app:${NC}"
 echo "   1. Open the URL above in Chrome/Edge"
@@ -121,13 +121,13 @@ echo -e "${YELLOW}Press Ctrl+C to stop the server${NC}"
 echo ""
 echo -e "${BLUE}================================================${NC}"
 echo -e "${GREEN}Server is running on:${NC}"
-echo -e "   ${BLUE}http://localhost:$PORT/invoice_generator_v2.0.html${NC}"
+echo -e "   ${BLUE}http://localhost:$PORT/src/index.html${NC}"
 echo -e "${BLUE}================================================${NC}"
 echo ""
 
 # Open in default browser
 sleep 1
-open "http://localhost:$PORT/invoice_generator_v2.0.html"
+open "http://localhost:$PORT/src/index.html"
 
 # Start the server
 python3 -m http.server $PORT

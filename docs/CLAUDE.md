@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 QHD Invoice Generator is a software for creating and managing commercial invoices, proforma invoices, and packing lists.
 
-**Key characteristic**: This is a monolithic single-file application (`invoice_generator_v2.0.html`) containing all HTML, CSS, and JavaScript in one ~2900 line file.
+**Key characteristic**: This is a monolithic single-file application (`src/index.html`) containing all HTML, CSS, and JavaScript in one ~2900 line file.
 
 ## Running the Application
 
@@ -14,18 +14,18 @@ QHD Invoice Generator is a software for creating and managing commercial invoice
 
 **macOS/Linux:**
 ```bash
-./install.command
+scripts/install.command
 # Or manually:
 python3 -m http.server 8080
-# Then open: http://localhost:8080/invoice_generator_v2.0.html
+# Then open: http://localhost:8080/src/index.html
 ```
 
 **Windows:**
 ```cmd
-install.bat
+scripts\install.bat
 # Or manually:
 python -m http.server 8080
-# Then open: http://localhost:8080/invoice_generator_v2.0.html
+# Then open: http://localhost:8080/src/index.html
 ```
 
 The application requires a web server (cannot be opened as `file://`) due to service worker and PWA requirements.
@@ -36,9 +36,29 @@ Users can install as a desktop/mobile app via browser's "Install" button when ac
 
 ## Architecture
 
+### Project Structure
+
+```
+invoice_generator/
+├── src/                      # Application source code
+│   ├── index.html           # Main application (~2900 lines)
+│   ├── manifest.json        # PWA manifest
+│   └── sw.js                # Service worker
+├── electron/                 # Electron desktop app
+│   ├── main.js              # Main process
+│   └── preload.js           # Preload script
+├── assets/                   # Static resources
+│   └── icons/               # App icons
+├── scripts/                  # Install/build scripts
+│   ├── install.command      # macOS installer
+│   └── install.bat          # Windows installer
+├── docs/                     # Documentation
+└── package.json
+```
+
 ### Single-File Structure
 
-The entire application is contained in `invoice_generator_v2.0.html`:
+The entire application is contained in `src/index.html`:
 - **Lines 1-733**: HTML structure with Tailwind CSS styling
 - **Lines 734-2183**: Main JavaScript application logic
 - **Lines 2184-2915**: Print view generation logic
@@ -113,17 +133,17 @@ Each has add/edit/delete functionality with dropdown selection in main form. Pro
 
 ## Supporting Files
 
-- `manifest.json`: PWA manifest defining app name, icons, shortcuts
-- `sw.js`: Service worker for offline caching (caches HTML, manifest, icons)
-- `icon-192.png`, `icon-512.png`, `icon.svg`: PWA icons
-- `features.md`: Chinese requirements document (all requirements marked complete)
-- `USER_MANUAL.md`: Bilingual (Chinese/English) end-user documentation
+- `src/manifest.json`: PWA manifest defining app name, icons, shortcuts
+- `src/sw.js`: Service worker for offline caching (caches HTML, manifest, icons)
+- `assets/icons/`: App icons (icon-192.png, icon-512.png, icon.svg)
+- `docs/features.md`: Chinese requirements document (all requirements marked complete)
+- `docs/USER_MANUAL.md`: Bilingual (Chinese/English) end-user documentation
 
 ## Development Notes
 
 ### Modifying the Application
 
-Since this is a single-file application, all changes go into `invoice_generator_v2.0.html`:
+Since this is a single-file application, all changes go into `src/index.html`:
 - HTML structure changes: Lines 1-733
 - Form logic and data handling: Lines 734-2183
 - Print layout generation: Lines 2184-2915

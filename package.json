@@ -2,7 +2,7 @@
   "name": "qhd-invoice-generator",
   "version": "3.0.3",
   "description": "Invoice and Packing List Generator for QHD Company",
-  "main": "main.js",
+  "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win --mac",
@@ -32,12 +32,9 @@
       "output": "dist"
     },
     "files": [
-      "main.js",
-      "preload.js",
-      "index.html",
-      "icon-192.png",
-      "icon-512.png",
-      "icon.svg"
+      "electron/",
+      "src/",
+      "assets/"
     ],
     "win": {
       "target": [
@@ -50,7 +47,7 @@
           "arch": ["ia32", "x64"]
         }
       ],
-      "icon": "icon-512.png"
+      "icon": "assets/icons/icon-512.png"
     },
     "mac": {
       "target": [
@@ -69,7 +66,7 @@
           ]
         }
       ],
-      "icon": "icon-512.png",
+      "icon": "assets/icons/icon-512.png",
       "category": "public.app-category.business"
     },
     "nsis": {
