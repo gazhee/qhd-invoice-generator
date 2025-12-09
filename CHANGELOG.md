@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.0.3] - 2025-12-08
+
+### Fixed
+- **Windows PDF rendering compatibility**: Improved table layout rendering on Windows platform
+  - Table font size: 0.7rem → 0.68rem (reduced by ~3%)
+  - Print layout horizontal padding: 40px → 32px (reduced by 8px on each side)
+  - Provides 16px additional horizontal space for table content
+  - Ensures consistent display across Windows and macOS platforms
+  - Affected file: `index.html` (lines 132, 2174)
+
+---
+
 ## [3.0.2] - 2025-12-08
 
 ### Fixed
@@ -258,7 +270,8 @@ Initial release of QHD Invoice Generator as a Progressive Web Application (PWA).
 2025-11-29  v2.5.4   TOTALS Row + Print Pagination Fixes
 2025-12-03  v3.0.0   Electron PDF + Edit Historical Revisions
 2025-12-07  v3.0.1   Project Cleanup
-2025-12-08  v3.0.2   Packing List Column Width Fix (current)
+2025-12-08  v3.0.2   Packing List Column Width Fix
+2025-12-08  v3.0.3   Windows PDF Rendering Fix (current)
 ```
 
 ---
