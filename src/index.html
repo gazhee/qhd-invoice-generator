@@ -816,6 +816,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const D = id => document.getElementById(id);
     const Q = sel => document.querySelector(sel);
     const QA = sel => document.querySelectorAll(sel);
+    function debounce(fn, ms) {
+        let timer;
+        return function(...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn.apply(this, args), ms);
+        };
+    }
     let shipperProfiles = {};
     let consigneeProfiles = {};
     let billToProfiles = {};
@@ -833,6 +840,40 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastRenderedRevisionBase = '';
     let editingLocked = false;
     let revisionConfirmed = false;
+
+    // In-memory index of document keys to avoid scanning all of localStorage
+    const documentKeyIndex = {
+        _cache: null,
+        _buildCache() {
+            const index = { invoice: [], packing: [] };
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (!key) continue;
+                if (key.startsWith('invoice_')) {
+                    index.invoice.push(key.slice('invoice_'.length));
+                } else if (key.startsWith('packing_')) {
+                    index.packing.push(key.slice('packing_'.length));
+                }
+            }
+            this._cache = index;
+        },
+        getKeys(docType) {
+            if (!this._cache) this._buildCache();
+            return docType === 'packing' ? this._cache.packing : this._cache.invoice;
+        },
+        addKey(coreId, docType) {
+            if (!this._cache) this._buildCache();
+            const list = docType === 'packing' ? this._cache.packing : this._cache.invoice;
+            if (!list.includes(coreId)) list.push(coreId);
+        },
+        removeKey(coreId, docType) {
+            if (!this._cache) this._buildCache();
+            const list = docType === 'packing' ? 'packing' : 'invoice';
+            this._cache[list] = this._cache[list].filter(k => k !== coreId);
+        },
+        invalidate() { this._cache = null; }
+    };
+
     const getDocumentMode = () => (Q('input[name="document-mode"]:checked')?.value || 'invoice');
     const isPackingMode = () => getDocumentMode() === 'packing';
     const getInvoiceType = () => (Q('input[name="invoice-type"]:checked')?.value || 'INVOICE');
@@ -1058,12 +1099,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!segment) return '01';
         let maxSeq = 0;
         const docPrefix = docType === 'packing' ? 'QHD-PL' : 'QHD-INV';
-        const storagePrefix = docType === 'packing' ? 'packing_' : 'invoice_';
         const prefix = `${docPrefix}-${segment}`;
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (!key || !key.startsWith(storagePrefix)) continue;
-            const coreId = key.slice(storagePrefix.length);
+        const keys = documentKeyIndex.getKeys(docType);
+        for (const coreId of keys) {
             if (!coreId.startsWith(prefix)) continue;
             const parts = coreId.split('-');
             if (parts.length < 3) continue;
@@ -1157,6 +1195,7 @@ document.addEventListener('DOMContentLoaded', function() {
             versionedData.documentType = docType;
             existing[version] = versionedData;
             localStorage.setItem(key, JSON.stringify(existing));
+            documentKeyIndex.addKey(coreId, docType);
         },
         deleteRevision(coreId, revisionKey, docType = getDocumentMode()) {
             if (!coreId || !revisionKey) return null;
@@ -1167,6 +1206,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const remainingKeys = Object.keys(revisions);
             if (remainingKeys.length === 0) {
                 localStorage.removeItem(key);
+                documentKeyIndex.removeKey(coreId, docType);
                 return {};
             }
             localStorage.setItem(key, JSON.stringify(revisions));
@@ -1183,18 +1223,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!datalist) return;
 
         datalist.innerHTML = '';
-        const invoiceKeys = [];
-
-        // Scan localStorage for all saved invoices
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('invoice_')) {
-                const coreId = key.slice('invoice_'.length);
-                if (coreId.startsWith('QHD-INV-')) {
-                    invoiceKeys.push(coreId);
-                }
-            }
-        }
+        const docType = getDocumentMode();
+        const expectedPrefix = docType === 'packing' ? 'QHD-PL-' : 'QHD-INV-';
+        const invoiceKeys = documentKeyIndex.getKeys(docType).filter(k => k.startsWith(expectedPrefix));
 
         // Sort by date (newest first) - format is QHD-INV-YYYYMMDD-NN
         invoiceKeys.sort((a, b) => {
@@ -1709,7 +1740,6 @@ document.addEventListener('DOMContentLoaded', function() {
             invoiceVersionDirty = false;
         }
         currentRevisionLoaded = '';
-        setEditingLocked(false);
         updateRevisionIndicator();
         updateAllPreviews();
         updateNewRevisionButtonState();
@@ -2390,7 +2420,10 @@ ${autoPrintScriptCloseGuard}
         currentRevisionLoaded = '';
         lastRenderedRevisionBase = '';
         revisionConfirmed = false;
-        setEditingLocked(false);
+        // Clear items from previous mode to prevent cross-mode contamination
+        D('items-container').innerHTML = '';
+        itemCounter = 0;
+        packageCounter = 0;
         invoiceSeqDirty = false;
         invoiceVersionDirty = false;
         lastAutoDocumentSeq = '';
@@ -2495,43 +2528,45 @@ ${autoPrintScriptCloseGuard}
             });
         }
 
-        QA('.item-row').forEach(row => {
-            const uomSelect = row.querySelector('.uom-select');
-            const qtyInput = row.querySelector('[data-item-prop="qty"]');
-            const unitPriceInput = row.querySelector('[data-item-prop="unitPrice"]');
-            const amountInput = row.querySelector('[data-item-prop="amount"]');
-            const netWtInput = row.querySelector('[data-item-prop="netWt"]');
-            const qtyValue = qtyInput ? qtyInput.value : '0';
-            const unitPriceValue = unitPriceInput ? unitPriceInput.value : '0';
-            const manualRequested = row.dataset.manualAmount === 'true';
-            const parsedAmount = amountInput ? parseAmountValue(amountInput.value) : null;
-            let useManual = manualRequested && parsedAmount !== null;
-            let resolvedAmount = useManual ? parsedAmount : computeItemAmount(qtyValue, unitPriceValue);
-            if (!Number.isFinite(resolvedAmount)) {
-                resolvedAmount = 0;
-            }
-
-            if (finalizeAmounts) {
-                if (useManual) {
-                    if (amountInput) amountInput.value = parsedAmount.toFixed(2);
-                    row.dataset.manualAmount = 'true';
-                } else {
-                    row.dataset.manualAmount = 'false';
-                    if (amountInput) amountInput.value = resolvedAmount.toFixed(2);
+        if (docType === 'invoice') {
+            QA('.item-row').forEach(row => {
+                const uomSelect = row.querySelector('.uom-select');
+                const qtyInput = row.querySelector('[data-item-prop="qty"]');
+                const unitPriceInput = row.querySelector('[data-item-prop="unitPrice"]');
+                const amountInput = row.querySelector('[data-item-prop="amount"]');
+                const netWtInput = row.querySelector('[data-item-prop="netWt"]');
+                const qtyValue = qtyInput ? qtyInput.value : '0';
+                const unitPriceValue = unitPriceInput ? unitPriceInput.value : '0';
+                const manualRequested = row.dataset.manualAmount === 'true';
+                const parsedAmount = amountInput ? parseAmountValue(amountInput.value) : null;
+                let useManual = manualRequested && parsedAmount !== null;
+                let resolvedAmount = useManual ? parsedAmount : computeItemAmount(qtyValue, unitPriceValue);
+                if (!Number.isFinite(resolvedAmount)) {
+                    resolvedAmount = 0;
                 }
-            }
 
-            data.items.push({
-                description: row.querySelector('[data-item-prop="description"]').value,
-                'hs-code': row.querySelector('[data-item-prop="hs-code"]').value,
-                qty: qtyValue,
-                uom: uomSelect.value === 'Custom' ? row.querySelector('[data-item-prop="uom-custom"]').value : uomSelect.value,
-                netWt: netWtInput ? netWtInput.value : '0',
-                unitPrice: unitPriceValue,
-                amount: resolvedAmount.toFixed(2),
-                amountMode: useManual ? 'manual' : 'auto'
+                if (finalizeAmounts) {
+                    if (useManual) {
+                        if (amountInput) amountInput.value = parsedAmount.toFixed(2);
+                        row.dataset.manualAmount = 'true';
+                    } else {
+                        row.dataset.manualAmount = 'false';
+                        if (amountInput) amountInput.value = resolvedAmount.toFixed(2);
+                    }
+                }
+
+                data.items.push({
+                    description: row.querySelector('[data-item-prop="description"]').value,
+                    'hs-code': row.querySelector('[data-item-prop="hs-code"]').value,
+                    qty: qtyValue,
+                    uom: uomSelect.value === 'Custom' ? row.querySelector('[data-item-prop="uom-custom"]').value : uomSelect.value,
+                    netWt: netWtInput ? netWtInput.value : '0',
+                    unitPrice: unitPriceValue,
+                    amount: resolvedAmount.toFixed(2),
+                    amountMode: useManual ? 'manual' : 'auto'
+                });
             });
-        });
+        }
 
         const invoiceParts = composeInvoiceParts();
         data.coreId = invoiceParts.base;
@@ -2733,7 +2768,6 @@ ${autoPrintScriptCloseGuard}
         addNewItem({ description: 'Premium Electronic Components\nHigh-quality circuit boards for industrial use\nSpecification: 25mm x 15mm, Grade A', 'hs-code': '8541.90.00', qty: 1000, uom: 'PCS', netWt: 5.50, unitPrice: 2.45 });
 
         latestStoredRevision = '';
-        setEditingLocked(false);
         updateRevisionIndicator(latestStoredRevision);
 
         D('shipper-select').dispatchEvent(new Event('change'));
@@ -2764,7 +2798,8 @@ ${autoPrintScriptCloseGuard}
         });
     });
     window.addEventListener('resize', autoFitPreview);
-    D('form-container').addEventListener('input', updateAllPreviews);
+    const debouncedUpdateAllPreviews = debounce(updateAllPreviews, 250);
+    D('form-container').addEventListener('input', debouncedUpdateAllPreviews);
     
     D('date').addEventListener('change', () => {
         syncInvoiceDateSegment();

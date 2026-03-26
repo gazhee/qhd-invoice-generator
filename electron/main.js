@@ -102,7 +102,7 @@ function createWindow() {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
               title: 'About QHD Invoice Generator',
-              message: 'QHD Invoice Generator v3.0.0',
+              message: 'QHD Invoice Generator v3.0.4',
               detail: 'Invoice and Packing List Generator for QHD Company\n\nDeveloped by Xuan Zhang\nEmail: xuan.zhang@qhdpv.com',
               buttons: ['OK']
             });
@@ -169,9 +169,12 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('show-save-dialog', async (event, options) => {
+    // Use Documents folder as base directory so Windows reliably pre-fills the filename
+    const filename = options.defaultPath || 'invoice.pdf';
+    const fullDefaultPath = path.join(app.getPath('documents'), filename);
     const result = await dialog.showSaveDialog(mainWindow, {
       title: 'Save PDF',
-      defaultPath: options.defaultPath || 'invoice.pdf',
+      defaultPath: fullDefaultPath,
       filters: [
         { name: 'PDF Files', extensions: ['pdf'] }
       ]
